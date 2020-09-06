@@ -22,7 +22,6 @@ begin
 			"ImageMagick",
 			"PlutoUI",
 			"Plots",
-			"PaddedViews",
 			"ImageFiltering"])
 end
 
@@ -33,7 +32,6 @@ begin
 	using Statistics
 	using LinearAlgebra
 	using Plots
-	using PaddedViews
 	using ImageFiltering
 end
 
@@ -61,13 +59,6 @@ brightness(c::AbstractRGB) = mean((c.r, c.g, c.b))
 
 # ╔═╡ fc1c43cc-eef6-11ea-0fc4-a90ac4336964
 Gray.(brightness.(img) ./ maximum(brightness.(img)))
-
-# ╔═╡ 2afc2e3c-eef7-11ea-3dd4-797539cbf4da
-# brightness of an image bordered with zeros
-function pad(X::Array, elem=zero(eltype(X)))
-	h, w = size(X)
-	PaddedView(elem, X, (0:h+1, 0:w+1))
-end
 
 # ╔═╡ 82c0d0c8-efec-11ea-1bb9-83134ecb877e
 md"""
@@ -247,6 +238,7 @@ function least_edgy(E)
 end
 
 # ╔═╡ 8b204a2a-eff6-11ea-25b0-13f230037ee1
+# The bright areas are screaming "AVOID ME!!!"
 least_e, dirs = least_edgy(edgeness(img))
 
 # ╔═╡ 84d3afe4-eefe-11ea-1e31-bf3b2af4aecd
@@ -352,7 +344,6 @@ md"shrunk by $n:"
 # ╠═d2ae6dd2-eef9-11ea-02df-255ec3b46a36
 # ╠═0b6010a8-eef6-11ea-3ad6-c1f10e30a413
 # ╠═fc1c43cc-eef6-11ea-0fc4-a90ac4336964
-# ╟─2afc2e3c-eef7-11ea-3dd4-797539cbf4da
 # ╟─82c0d0c8-efec-11ea-1bb9-83134ecb877e
 # ╠═da726954-eff0-11ea-21d4-a7f4ae4a6b09
 # ╠═da39c824-eff0-11ea-375b-1b6c6e186182
