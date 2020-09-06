@@ -13,16 +13,10 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ e196fa66-eef5-11ea-2afe-c9fcb6c48937
+# ╔═╡ 877df834-f078-11ea-303b-e98273ef98a4
 begin
-	# Poor man's Project.toml
 	using Pkg
-
-	Pkg.add(["Images",
-			"ImageMagick",
-			"PlutoUI",
-			"Plots",
-			"ImageFiltering"])
+	Pkg.activate(tempname())
 end
 
 # ╔═╡ 0316b94c-eef6-11ea-19bc-dbc959901bb5
@@ -38,6 +32,17 @@ end
 # ╔═╡ fe19ad0a-ef04-11ea-1e5f-1bfcbbb51302
 using PlutoUI
 
+# ╔═╡ e196fa66-eef5-11ea-2afe-c9fcb6c48937
+# Poor man's Project.toml
+
+Pkg.add(["Images",
+		 "ImageMagick",
+		 "PlutoUI",
+		 "Plots",
+		 "Hyperscript",
+		 "ImageFiltering"])
+
+
 # ╔═╡ cb335074-eef7-11ea-24e8-c39a325166a1
 md"""
 # Seam Carving
@@ -52,6 +57,9 @@ md"""
 # img = load(download("https://imgur.com/RbrCJLX.png"))
 img = load(download("https://cdn.shortpixel.ai/spai/w_1086+q_lossy+ret_img+to_webp/https://wisetoast.com/wp-content/uploads/2015/10/The-Persistence-of-Memory-salvador-deli-painting.jpg"))
 #img = load(download("https://web.mit.edu/facilities/photos/construction/Projects/stata/1_large.jpg", tempname()))
+
+# ╔═╡ 8340cf20-f079-11ea-1665-f5864bc49cb9
+
 
 # ╔═╡ 0b6010a8-eef6-11ea-3ad6-c1f10e30a413
 # arbitrarily choose the brightness of a pixel as mean of rgb
@@ -364,13 +372,15 @@ md"shrunk by $n:"
 [size(img) size(carved[n])]
 
 # ╔═╡ Cell order:
+# ╠═877df834-f078-11ea-303b-e98273ef98a4
 # ╠═e196fa66-eef5-11ea-2afe-c9fcb6c48937
 # ╠═0316b94c-eef6-11ea-19bc-dbc959901bb5
 # ╟─cb335074-eef7-11ea-24e8-c39a325166a1
 # ╠═d2ae6dd2-eef9-11ea-02df-255ec3b46a36
+# ╠═8340cf20-f079-11ea-1665-f5864bc49cb9
 # ╠═0b6010a8-eef6-11ea-3ad6-c1f10e30a413
 # ╠═fc1c43cc-eef6-11ea-0fc4-a90ac4336964
-# ╠═82c0d0c8-efec-11ea-1bb9-83134ecb877e
+# ╟─82c0d0c8-efec-11ea-1bb9-83134ecb877e
 # ╠═da726954-eff0-11ea-21d4-a7f4ae4a6b09
 # ╠═da39c824-eff0-11ea-375b-1b6c6e186182
 # ╠═abf6944e-f066-11ea-18e2-0b92606dab85
@@ -385,7 +395,7 @@ md"shrunk by $n:"
 # ╟─fcf46120-efec-11ea-06b9-45f470899cb2
 # ╟─dec62538-efee-11ea-1e03-0b801e61e91c
 # ╟─f8283a0e-eff4-11ea-23d3-9f1ced1bafb4
-# ╠═025e2c94-eefb-11ea-12cb-f56f34886334
+# ╟─025e2c94-eefb-11ea-12cb-f56f34886334
 # ╠═acc1ee8c-eef9-11ea-01ac-9b9e9c4167b3
 # ╠═8b204a2a-eff6-11ea-25b0-13f230037ee1
 # ╠═84d3afe4-eefe-11ea-1e31-bf3b2af4aecd
