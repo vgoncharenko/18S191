@@ -62,10 +62,11 @@ Gray.(brightness.(img) ./ maximum(brightness.(img)))
 
 # ╔═╡ 82c0d0c8-efec-11ea-1bb9-83134ecb877e
 md"""
-# Edge detection
+# Edge detection filter
 
 (Spoiler alert!) Here, we use the Sobel edge detection filter we created in Homework 1.
 
+(Notes: remove kron,)
 
 ```math
 \begin{align}
@@ -103,6 +104,20 @@ $$G_\text{total} = \sqrt{G_x^2 + G_y^2}.$$
 
 # ╔═╡ da726954-eff0-11ea-21d4-a7f4ae4a6b09
 Sy, Sx = Kernel.sobel()
+
+# ╔═╡ abf6944e-f066-11ea-18e2-0b92606dab85
+(collect(Int.(8 .* Sy)), collect(Int.(8 .* Sx)))
+
+# ╔═╡ 5ebf6ebe-f069-11ea-0256-1b04242afb27
+[img[300:end, 1:300] img[300:end, 1:300]]
+
+# ╔═╡ ac8d6902-f069-11ea-0f1d-9b0fa706d769
+md"""
+- green shows positive values
+- red shows negative values
+
+Horizontal gradient <-> Vertical gradient
+"""
 
 # ╔═╡ 172c7612-efee-11ea-077a-5d5c6e2505a4
 function shrink_image(image, ratio=5)
@@ -161,15 +176,14 @@ function edgeness(img)
 	∇y = convolve(b, Sy)
 	∇x = convolve(b, Sx)
 
-	sqrt.(∇x.^2 + ∇x.^2)
+	sqrt.(∇x.^2 + ∇y.^2)
 end
 
 # ╔═╡ dec62538-efee-11ea-1e03-0b801e61e91c
-function show_colored_kernel(kernel)
-	to_rgb(x) = RGB(max(-x, 0), max(x, 0), 0)
-	to_rgb.(kernel) / maximum(abs.(kernel))
-end
-
+	function show_colored_kernel(kernel)
+		to_rgb(x) = RGB(max(-x, 0), max(x, 0), 0)
+		to_rgb.(kernel) / maximum(abs.(kernel))
+	end
 
 # ╔═╡ da39c824-eff0-11ea-375b-1b6c6e186182
 show_colored_kernel.((Sy, Sx))
@@ -178,17 +192,18 @@ show_colored_kernel.((Sy, Sx))
 begin
 	∇y = convolve(brightness.(img), Sy)
 	∇x = convolve(brightness.(img), Sx)
-	show_colored_kernel([∇x ∇y])
+
+	show_colored_kernel([∇x ∇y]) # do hbox
 end
 
-# ╔═╡ b66662e2-eff3-11ea-08e0-1fd53fd0a0de
+# ╔═╡ d0eba4f8-f069-11ea-17f3-171b793239d2
 let
 	# zoom in on the whale thing
-	show_colored_kernel([∇x[300:end,  260:end-40] ∇y[300:end, 260:end-40]])
+	show_colored_kernel([∇x[300:end,  1:300] ∇y[300:end, 1:300]])
 end
 
 # ╔═╡ d6a268c0-eff4-11ea-2c9e-bfef19c7f540
-show_colored_kernel(edgeness(img)) # it's all green because norm makes it positive.
+vcat(img, show_colored_kernel(edgeness(img))) # it's all green because norm makes it positive.
 
 # ╔═╡ f8283a0e-eff4-11ea-23d3-9f1ced1bafb4
 md"""
@@ -270,12 +285,6 @@ end
 # ╔═╡ 9abbb158-ef03-11ea-39df-a3e8aa792c50
 get_seam_at(dirs, 2)
 
-# ╔═╡ cf9a9124-ef04-11ea-14a4-abf930edc7cc
-@bind start_column Slider(1:size(img, 2))
-
-# ╔═╡ 772a4d68-ef04-11ea-366a-f7ae9e1634f6
-path = get_seam_at(dirs, start_column)
-
 # ╔═╡ 14f72976-ef05-11ea-2ad5-9f0914f9cf58
 function mark_path(img, path)
 	img′ = copy(img)
@@ -285,8 +294,25 @@ function mark_path(img, path)
 	img′
 end
 
+# ╔═╡ cf9a9124-ef04-11ea-14a4-abf930edc7cc
+@bind start_column Slider(1:size(img, 2))
+
+# ╔═╡ 772a4d68-ef04-11ea-366a-f7ae9e1634f6
+path = get_seam_at(dirs, start_column)
+
 # ╔═╡ 552fb92e-ef05-11ea-0a79-dd7a6760089a
 [mark_path(img, path) mark_path(show_colored_kernel(least_e), path)]
+
+# ╔═╡ 081a98cc-f06e-11ea-3664-7ba51d4fd153
+f(x) = Gray(1-x) # colors[round(Int, clamp((x+1) * 45, 1, 90))]
+
+# ╔═╡ 237647e8-f06d-11ea-3c7e-2da57e08bebc
+e = edgeness(img);
+
+# ╔═╡ dfd03c4e-f06c-11ea-1e2a-89233a675138
+let
+	[mark_path(img, path) mark_path(map(f, e ./ maximum(e)), path)]
+end
 
 # ╔═╡ ca4a87e8-eff8-11ea-3d57-01dfa34ff723
 let
@@ -344,11 +370,14 @@ md"shrunk by $n:"
 # ╠═d2ae6dd2-eef9-11ea-02df-255ec3b46a36
 # ╠═0b6010a8-eef6-11ea-3ad6-c1f10e30a413
 # ╠═fc1c43cc-eef6-11ea-0fc4-a90ac4336964
-# ╟─82c0d0c8-efec-11ea-1bb9-83134ecb877e
+# ╠═82c0d0c8-efec-11ea-1bb9-83134ecb877e
 # ╠═da726954-eff0-11ea-21d4-a7f4ae4a6b09
 # ╠═da39c824-eff0-11ea-375b-1b6c6e186182
+# ╠═abf6944e-f066-11ea-18e2-0b92606dab85
 # ╠═44192a40-eff2-11ea-0ec7-05cdadb0c29a
-# ╠═b66662e2-eff3-11ea-08e0-1fd53fd0a0de
+# ╠═5ebf6ebe-f069-11ea-0256-1b04242afb27
+# ╟─ac8d6902-f069-11ea-0f1d-9b0fa706d769
+# ╠═d0eba4f8-f069-11ea-17f3-171b793239d2
 # ╠═6f7bd064-eff4-11ea-0260-f71aa7f4f0e5
 # ╠═d6a268c0-eff4-11ea-2c9e-bfef19c7f540
 # ╟─172c7612-efee-11ea-077a-5d5c6e2505a4
@@ -366,10 +395,13 @@ md"shrunk by $n:"
 # ╠═fe19ad0a-ef04-11ea-1e5f-1bfcbbb51302
 # ╠═977b6b98-ef03-11ea-0176-551fc29729ab
 # ╠═9abbb158-ef03-11ea-39df-a3e8aa792c50
-# ╠═cf9a9124-ef04-11ea-14a4-abf930edc7cc
 # ╠═772a4d68-ef04-11ea-366a-f7ae9e1634f6
 # ╠═14f72976-ef05-11ea-2ad5-9f0914f9cf58
+# ╠═cf9a9124-ef04-11ea-14a4-abf930edc7cc
 # ╠═552fb92e-ef05-11ea-0a79-dd7a6760089a
+# ╠═081a98cc-f06e-11ea-3664-7ba51d4fd153
+# ╠═237647e8-f06d-11ea-3c7e-2da57e08bebc
+# ╠═dfd03c4e-f06c-11ea-1e2a-89233a675138
 # ╠═ca4a87e8-eff8-11ea-3d57-01dfa34ff723
 # ╠═4f23bc54-ef0f-11ea-06a9-35ca3ece421e
 # ╠═b401f398-ef0f-11ea-38fe-012b7bc8a4fa
