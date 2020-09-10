@@ -22,28 +22,28 @@ end
 function find_energy(img)
     energy_x = imfilter(brightness.(img), Kernel.sobel()[2])
     energy_y = imfilter(brightness.(img), Kernel.sobel()[1])
+
     return sqrt.(energy_x.^2 + energy_y.^2)
 end
 
 function find_energy_map(energy)
+
     energy_map = zeros(size(energy))
-    energy_map[end,:] .= energy[end,:]
+    energy_map[end,:] .= energy[end, :]
+
     next_elements = zeros(Int, size(energy))
 
     for i = size(energy)[1]-1:-1:1
         for j = 1:size(energy)[2]
             left = max(1, j-1)
-            right = min(size(energy)[2], j+1)
-            if left < 1
-                println("less than 1")
-            end
+            right = min(j+1, size(energy)[2])
 
             local_energy, next_element = findmin(energy_map[i+1, left:right])
-            energy_map[i,j] += local_energy + energy[i,j]
-            next_elements[i,j] = next_element -2
 
-            # correct for only having 2 options on left edge.
-            if left == 1 && right-left < 2
+            energy_map[i,j] += local_energy +  energy[i,j]
+            next_elements[i,j] = next_element - 2
+
+            if left == 1
                 next_elements[i,j] += 1
             end
         end
@@ -52,18 +52,16 @@ function find_energy_map(energy)
     return energy_map, next_elements
 end
 
-function find_seam_at(energy, next_elements, element)
-    seam = zeros(Int, size(next_elements)[1])
-    seam[1] = element
+function find_seam_at(next_elements, element)
 
-    seam_energy = energy[element]
+     seam = zeros(Int, size(next_elements)[1])
+     seam[1] = element
 
-    for i = 2:length(seam)
-        seam[i] = seam[i-1] + next_elements[i, seam[i-1]]
-        seam_energy += energy[i, seam[i]]
-    end
+     for i = 2:length(seam)
+         seam[i] = seam[i-1] + next_elements[i, seam[i-1]]
+     end
 
-    return seam, seam_energy
+     return seam
 end
 
 # function to create seams and return seam of minimum energy
@@ -71,21 +69,9 @@ function find_seam(energy)
 
     energy_map, next_elements = find_energy_map(energy)
 
-    # creating a matrix of all seams and energies
-    # Note: No matrix is actually needed here
-    energies = zeros(size(energy)[2])
-    seams = zeros(Int, size(energy))
+    min_value, min_element = findmin(energy_map[1,:])
+    return find_seam_at(next_elements, min_element)
     
-    for i = 1:size(energy)[2]
-        seams[:,i], energies[i] = find_seam_at(energy, next_elements, i)
-    end
-
-    # figuring out which seam we keep by searching through all the energies
-    kept_energy, kept_element = findmin(energies)
-    kept_seam = seams[:,kept_element]
-
-    return kept_seam
-
 end
 
 # function to remove seams
@@ -122,4 +108,6 @@ function seam_carving(img, res)
         img = remove_seam(img, seam)
         write_image(img, i)
     end
+
+    return img
 end
