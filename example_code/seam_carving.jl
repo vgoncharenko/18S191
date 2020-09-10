@@ -1,4 +1,4 @@
-using Images, ImageView
+using Images, ImageView, Statistics
 
 function draw_seam(img, seam)
     img_w_seam = copy(img)
@@ -14,19 +14,17 @@ function write_image(img, i; filebase = "out")
 end
 
 # function to return magnitude of image elements
-function brightness(img_element)
-    return img_element.r + img_element.g + img_element.b
+function brightness(img_element::AbstractRGB)
+    return mean((img_element.r + img_element.g + img_element.b))
+    #return img_element.r + img_element.g + img_element.b
 end
 
-# function to find energy of image
 function find_energy(img)
     energy_x = imfilter(brightness.(img), Kernel.sobel()[2])
     energy_y = imfilter(brightness.(img), Kernel.sobel()[1])
     return sqrt.(energy_x.^2 + energy_y.^2)
-    return abs2.(imfilter(brightness.(img), Kernel.sobel()))
 end
 
-# function to find direction to move in
 function find_energy_map(energy)
     energy_map = zeros(size(energy))
     energy_map[end,:] .= energy[end,:]
@@ -45,7 +43,7 @@ function find_energy_map(energy)
             next_elements[i,j] = next_element -2
 
             # correct for only having 2 options on left edge.
-            if left == 1 && size(energy)[2] > 3
+            if left == 1 && right-left < 2
                 next_elements[i,j] += 1
             end
         end
@@ -54,7 +52,7 @@ function find_energy_map(energy)
     return energy_map, next_elements
 end
 
-function generate_seam(energy, next_elements, element)
+function find_seam_at(energy, next_elements, element)
     seam = zeros(Int, size(next_elements)[1])
     seam[1] = element
 
@@ -79,7 +77,7 @@ function find_seam(energy)
     seams = zeros(Int, size(energy))
     
     for i = 1:size(energy)[2]
-        seams[:,i], energies[i] = generate_seam(energy, next_elements, i)
+        seams[:,i], energies[i] = find_seam_at(energy, next_elements, i)
     end
 
     # figuring out which seam we keep by searching through all the energies
