@@ -1,0 +1,159 @@
+### A Pluto.jl notebook ###
+# v0.12.20
+
+using Markdown
+using InteractiveUtils
+
+# ╔═╡ 3ef7ee24-8a80-11eb-15d2-05dae0803348
+begin
+	using HTTP, JSON
+	
+	using Markdown
+	using InteractiveUtils
+	using Images
+	using ImageMagick
+	using PlutoUI
+	using ImageFiltering
+	using DSP
+	using Plots
+	using Statistics
+	using FFTW
+	
+	f = Plots.font("DejaVu Sans", 24);
+	timeList = ["03:00", "03:30", "04:00", "04:30", "05:00", "05:30", "06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"];
+end
+
+# ╔═╡ 3b37ed1a-8a81-11eb-3a25-25ae78aec384
+function get_result(data_from, data_to)
+	result=Dict();
+	address=61;
+	j=[];
+	
+	for companyId in 3:8
+		for h in timeList
+			sleep(2);
+			url = "https://www.happytoursusa.com/en/ajax/search?token=&idcountry=1&idcompany=$companyId&sale=&cidadeRetirada=$address&cidadeEntrega=61&dataRetirada=$data_from&dataEntrega=$data_to&horaRetirada=$h&horaEntrega=$h&pais_residencia=236&language=en";
+
+			#Reads the data from HTTP URL
+			r=""
+			try
+				r = HTTP.get(
+					url, 
+					[
+						"authority" => "www.happytoursusa.com", 
+						"pragma" => "no-cache", 
+						"cache-control"=>"no-cache",
+						"accept"=>"*/*",
+						"accept-language"=>"en-US,en;q=0.9,ru;q=0.8",
+						"cookie"=>"PHPSESSID=v3vqki4btknen4q2g82mc7qg63; __asc=ff5024d9178565969a2f5e32485; __auc=ff5024d9178565969a2f5e32485; _ga=GA1.2.46988947.1616356404; _gid=GA1.2.902380224.1616356404",
+						"Content-Type" => "application/json; charset=UTF-8"
+					]
+					);
+			catch e
+				print(e);
+				continue;
+			end
+			
+			j = JSON.parse(String(r.body));
+			if (haskey(j, "error")) continue; end
+			j;
+			
+			 for item in j["carros"]
+				if (!haskey(item, "size")) continue; end
+			 	item["time"]=h;
+				if (!haskey(result, string(item["size"], "_", item["baggageAmount"], "_", item["passengerAmount"]))) result[string(item["size"], "_", item["baggageAmount"], "_", item["passengerAmount"])] = Vector{Dict}(); end
+				
+				 push!(result[string(item["size"], "_", item["baggageAmount"], "_", item["passengerAmount"])], item);
+			 end
+		end
+	end
+	
+	return result;
+end
+
+# ╔═╡ 1da6e0b4-8a98-11eb-0bf2-554e2c2ba056
+function plot_result(result)
+	plot(timeList, [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], size = (2700, 2700), xtickfont=f, ytickfont=f, legendfont=f, guidefont=f, titlefont=f);
+	for (key, value) in pairs(result)
+		x=Vector{String}();
+		y=Vector{Float64}();
+		for (key1, value1) in pairs(value)
+			push!(x, value1["time"]);
+			push!(y, tryparse(Float64,value1["valor"]));
+		end
+		plot!(x, y, label=key);
+	end
+	current();
+end
+
+# ╔═╡ bc06fb9c-8a82-11eb-2a11-b5ad525dc25c
+begin
+	result1 = get_result("2021-04-01", "2021-04-05");
+	plot_result(result1);
+end
+
+# ╔═╡ 34cef25c-8a81-11eb-0133-97986ce4d3b8
+result1
+
+# ╔═╡ f01a1fd4-8a8e-11eb-2a2e-4f251d3da8e9
+begin
+	result2 = get_result("2021-03-31", "2021-04-05");
+	plot_result(result2);
+end
+
+# ╔═╡ 5f621d82-8aa4-11eb-12cc-876575ff1884
+begin
+	result3 = get_result("2021-03-31", "2021-04-06");
+	plot_result(result3);
+end
+
+# ╔═╡ 7253bfd6-8aa4-11eb-29fb-3d93163dfff1
+begin
+	result4 = get_result("2021-03-30", "2021-04-06");
+	plot_result(result4);
+end
+
+# ╔═╡ 800acf70-8aa4-11eb-14ca-37e5a2e098e5
+begin
+	result5 = get_result("2021-03-29", "2021-04-06");
+	plot_result(result5);
+end
+
+# ╔═╡ dcba62d4-8aaa-11eb-2d3c-13877e56205f
+result5
+
+# ╔═╡ eacf14b8-8a80-11eb-3c17-2385caf1c46f
+
+
+# ╔═╡ c56fd3fe-8a80-11eb-020c-0399b53fe1fb
+
+
+# ╔═╡ 89700cd6-8a80-11eb-3911-0f24df6cbb0f
+
+
+# ╔═╡ 872daab4-8a80-11eb-04d8-39dc4bbbe624
+
+
+# ╔═╡ 7b64d8e2-8a80-11eb-3172-1d0f0466a87d
+
+
+# ╔═╡ 5aacf680-8a80-11eb-0d4e-b76176f2477b
+
+
+# ╔═╡ Cell order:
+# ╠═3ef7ee24-8a80-11eb-15d2-05dae0803348
+# ╠═3b37ed1a-8a81-11eb-3a25-25ae78aec384
+# ╠═1da6e0b4-8a98-11eb-0bf2-554e2c2ba056
+# ╠═bc06fb9c-8a82-11eb-2a11-b5ad525dc25c
+# ╠═34cef25c-8a81-11eb-0133-97986ce4d3b8
+# ╠═f01a1fd4-8a8e-11eb-2a2e-4f251d3da8e9
+# ╠═5f621d82-8aa4-11eb-12cc-876575ff1884
+# ╠═7253bfd6-8aa4-11eb-29fb-3d93163dfff1
+# ╠═800acf70-8aa4-11eb-14ca-37e5a2e098e5
+# ╠═dcba62d4-8aaa-11eb-2d3c-13877e56205f
+# ╟─eacf14b8-8a80-11eb-3c17-2385caf1c46f
+# ╟─c56fd3fe-8a80-11eb-020c-0399b53fe1fb
+# ╟─89700cd6-8a80-11eb-3911-0f24df6cbb0f
+# ╟─872daab4-8a80-11eb-04d8-39dc4bbbe624
+# ╟─7b64d8e2-8a80-11eb-3172-1d0f0466a87d
+# ╟─5aacf680-8a80-11eb-0d4e-b76176f2477b
