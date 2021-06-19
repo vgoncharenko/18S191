@@ -71,10 +71,14 @@ begin
 	Tp_mvm = zeros(Float64, N_mvm);
 	Tp_GPU_real_2steps = [0.000109, 0.000187, 0.000179, 0.000310, 0.000406, 0.000879, 0.001212, 0.002001, 0.004325, 0.005948, 0.017153];
 	Tp_GPU_real_OneStep = [0.000079, 0.000170, 0.000139, 0.000241, 0.000241, 0.000659, 0.000446, 0.000925, 0.000863, 0.001515, 0.003031];
+
+	Tp_CPU8_real = [0.000293152, 0.000188624, 0.000164073, 0.000205863, 0.000448019, 0.00131523, 0.00423999, 0.0180002, 0.0476746, 0.249551, 6.23891];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
+	Tp_CPU16_real = [0.000335457, 0.000252915, 0.000281748, 0.000245044, 0.000459353, 0.00130977, 0.00414545, 0.0128069, 0.05105, 0.225218, 1.64807];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
+	Tp_CPU32_real = [0.000768577, 0.000703513, 0.000633718, 0.000670372, 0.00071964, 0.00130375, 0.00346425, 0.0131895, 0.041867, 0.155067, 1.95651];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
 	
-	Tp_CPU8_real = [0.000524214, 0.00047002, 0.000447704, 0.000710854, 0.00163298, 0.00312124, 0.0131016, 0.0473853, 0.194349, 0.62062, 7.11902];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
-	Tp_CPU16_real = [0.000665612, 0.000520171, 0.000422378, 0.000533149, 0.00105201, 0.00325375, 0.0112444, 0.0403614, 0.155247, 0.647076, 5.24977];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
-	Tp_CPU32_real = [0.00085018, 0.000717472, 0.000756965, 0.000828688, 0.00124257, 0.0030012, 0.010292, 0.0434404, 0.149173, 0.661817, 5.21716];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
+	Tp_CPU8_real_loop_unrolled = [0.000240674, 0.000138532, 0.000142338, 0.00022269, 0.000409169, 0.00129388, 0.00321101, 0.0093671, 0.0346442, 0.113349, 1.22145];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
+	Tp_CPU16_real_loop_unrolled = [0.000394569, 0.000290968, 0.000308606, 0.000297296, 0.00047905, 0.00137733, 0.00519842, 0.0182241, 0.052886, 0.10293, 0.663978];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
+	Tp_CPU32_real_loop_unrolled = [0.000923686, 0.00079691, 0.000876126, 0.00084179, 0.000686909, 0.00115958, 0.00269761, 0.00864347, 0.0298196, 0.106457, 1.26769];#, 0, 0, 0, 0, 0 ,0, 0, 0 ,0];
 	
 	speedup_mvm = zeros(Float64, N_mvm);
 	speedup_GPU_real_2steps = zeros(Float64, N_mvm);
@@ -82,6 +86,9 @@ begin
 	speedup_CPU8_real = zeros(Float64, N_mvm);
 	speedup_CPU16_real = zeros(Float64, N_mvm);
 	speedup_CPU32_real = zeros(Float64, N_mvm);
+	speedup_CPU8_real_loop_unrolled = zeros(Float64, N_mvm);
+	speedup_CPU16_real_loop_unrolled = zeros(Float64, N_mvm);
+	speedup_CPU32_real_loop_unrolled = zeros(Float64, N_mvm);
 	
 	efficiency_mvm = zeros(Float64, N_mvm);
 	efficiency_GPU_real_2steps = zeros(Float64, N_mvm);
@@ -89,6 +96,9 @@ begin
 	efficiency_CPU8_real = zeros(Float64, N_mvm);
 	efficiency_CPU16_real = zeros(Float64, N_mvm);
 	efficiency_CPU32_real = zeros(Float64, N_mvm);
+	efficiency_CPU8_real_loop_unrolled = zeros(Float64, N_mvm);
+	efficiency_CPU16_real_loop_unrolled = zeros(Float64, N_mvm);
+	efficiency_CPU32_real_loop_unrolled = zeros(Float64, N_mvm);
 
 	for i in 1:N_mvm
 		Tp_mvm[i] = 2 * w_list_mvm[i]/p_GPU_mvm * 1.e-9;
@@ -99,6 +109,9 @@ begin
 		speedup_CPU8_real[i] = Ts_CPU_real[i] / Tp_CPU8_real[i];
 		speedup_CPU16_real[i] = Ts_CPU_real[i] / Tp_CPU16_real[i];
 		speedup_CPU32_real[i] = Ts_CPU_real[i] / Tp_CPU32_real[i];
+		speedup_CPU8_real_loop_unrolled[i] = Ts_CPU_real[i] / Tp_CPU8_real_loop_unrolled[i];
+		speedup_CPU16_real_loop_unrolled[i] = Ts_CPU_real[i] / Tp_CPU16_real_loop_unrolled[i];
+		speedup_CPU32_real_loop_unrolled[i] = Ts_CPU_real[i] / Tp_CPU32_real_loop_unrolled[i];
 		
 		efficiency_mvm[i] = speedup_mvm[i] / p_GPU_mvm;
 		efficiency_GPU_real_2steps[i] = speedup_GPU_real_2steps[i] / p_GPU_mvm;
@@ -106,6 +119,9 @@ begin
 		efficiency_CPU8_real[i] = speedup_CPU8_real[i] / p_CPU8_mvm;
 		efficiency_CPU16_real[i] = speedup_CPU16_real[i] / p_CPU16_mvm;
 		efficiency_CPU32_real[i] = speedup_CPU32_real[i] / p_CPU32_mvm;
+		efficiency_CPU8_real_loop_unrolled[i] = speedup_CPU8_real_loop_unrolled[i] / p_CPU8_mvm;
+		efficiency_CPU16_real_loop_unrolled[i] = speedup_CPU16_real_loop_unrolled[i] / p_CPU16_mvm;
+		efficiency_CPU32_real_loop_unrolled[i] = speedup_CPU32_real_loop_unrolled[i] / p_CPU32_mvm;
 	end
 end
 
@@ -120,15 +136,21 @@ begin
 	plot!(w_list_mvm, Tp_CPU8_real, label="Tp_CPU8_real");
 	plot!(w_list_mvm, Tp_CPU16_real, label="Tp_CPU16_real");
 	plot!(w_list_mvm, Tp_CPU32_real, label="Tp_CPU32_real");
+	plot!(w_list_mvm, Tp_CPU8_real_loop_unrolled, label="Tp_CPU8_real_loop_unrolled");
+	plot!(w_list_mvm, Tp_CPU16_real_loop_unrolled, label="Tp_CPU16_real_loop_unrolled");
+	plot!(w_list_mvm, Tp_CPU32_real_loop_unrolled, label="Tp_CPU32_real_loop_unrolled");
 end
 
 # ╔═╡ 0b44f5e2-89b6-11eb-3056-038f60d880e1
 begin
-	plot(w_list_mvm, speedup_GPU_real_2steps, size = (2700, 2700), xtickfont=f, ytickfont=f, legendfont=f, guidefont=f, titlefont=f, label="speedup_GPU_real_2steps");
-	plot!(w_list_mvm, speedup_GPU_real_OneStep, label="speedup_GPU_real_OneStep");
-	plot!(w_list_mvm, speedup_CPU8_real, label="speedup_CPU8_real");
+	plot(w_list_mvm, speedup_CPU8_real, label="speedup_CPU8_real", size = (2700, 2700), xtickfont=f, ytickfont=f, legendfont=f, guidefont=f, titlefont=f,);
 	plot!(w_list_mvm, speedup_CPU16_real, label="speedup_CPU16_real");
 	plot!(w_list_mvm, speedup_CPU32_real, label="speedup_CPU32_real");
+	plot!(w_list_mvm, speedup_CPU8_real_loop_unrolled, label="speedup_CPU8_real_loop_unrolled");
+	plot!(w_list_mvm, speedup_CPU16_real_loop_unrolled, label="speedup_CPU16_real_loop_unrolled");
+	plot!(w_list_mvm, speedup_CPU32_real_loop_unrolled, label="speedup_CPU32_real_loop_unrolled");
+	plot!(w_list_mvm, speedup_GPU_real_2steps, label="speedup_GPU_real_2steps");
+    plot!(w_list_mvm, speedup_GPU_real_OneStep, label="speedup_GPU_real_OneStep");
 end
 
 # ╔═╡ f5be813e-89b5-11eb-089a-bb42d62a4c45
@@ -138,6 +160,9 @@ begin
 	plot!(w_list_mvm, efficiency_CPU8_real, label="efficiency_CPU8_real");
 	plot!(w_list_mvm, efficiency_CPU16_real, label="efficiency_CPU16_real");
 	plot!(w_list_mvm, efficiency_CPU32_real, label="efficiency_CPU32_real");
+	plot!(w_list_mvm, efficiency_CPU8_real_loop_unrolled, label="efficiency_CPU8_real_loop_unrolled");
+	plot!(w_list_mvm, efficiency_CPU16_real_loop_unrolled, label="efficiency_CPU16_real_loop_unrolled");
+	plot!(w_list_mvm, efficiency_CPU32_real_loop_unrolled, label="efficiency_CPU32_real_loop_unrolled");
 end
 
 # ╔═╡ Cell order:
